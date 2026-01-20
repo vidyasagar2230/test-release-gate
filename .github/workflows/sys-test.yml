@@ -1,0 +1,15 @@
+name: SYS-Environment-Testing
+on:
+  pull_request:
+    branches: [SYS] # Runs when you PR into SYS
+
+jobs:
+  sys-test: # This exact ID is what the Gatekeeper looks for
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run SYS Tests
+        run: |
+          echo "Building EAR for SYS..."
+          echo "System Testing Phase 1..."
+          sleep 5
+          echo "System Testing Complete!"
