@@ -12,21 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      workflows: write  # Fixes the "refusing to allow" error
+      workflows: write
     env:
-      # Sets the runner to Central Time
       TZ: 'America/Chicago' 
     steps:
       - name: Checkout code
-        uses: uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Create and Push Tag
         run: |
           APP_NAME="test-release-gate"
-          
-          # MMDDYYYY_HHMMSS in 24-hour CST
           TIMESTAMP=$(date +'%m%d%Y_%H%M%S')
-          
           TAG_NAME="${APP_NAME}_PRD_TAG_${TIMESTAMP}"
           
           git config user.name "github-actions[bot]"
