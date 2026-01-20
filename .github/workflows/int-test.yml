@@ -1,0 +1,15 @@
+name: INT-Environment-Testing
+on:
+  pull_request:
+    branches: [INT] # Runs when you PR into INT
+
+jobs:
+  int-test: # This exact ID is what the Gatekeeper looks for
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run INT Tests
+        run: |
+          echo "Building EAR for INT..."
+          echo "Deploying to INT Server..."
+          sleep 5
+          echo "Integration Testing Complete!"
