@@ -4,7 +4,6 @@ on: [pull_request]
 jobs:
   # JOB 1: Automatic Verification
   verify-flow:
-    # This runs for SYS and UAT, but skips for INT so you can actually start the process
     runs-on: ubuntu-latest
     steps:
       - name: Check Status
@@ -13,7 +12,7 @@ jobs:
           script: |
             const target = context.payload.pull_request.base.ref;
             
-            // 1. If merging to INT or main, we don't need to check a previous environment
+            // 1. Skip check for INT or main
             if (target === 'INT' || target === 'main') {
               console.log("Target is " + target + ". Skipping previous environment check.");
               return; 
@@ -22,16 +21,18 @@ jobs:
             // 2. Determine what status we are looking for
             const requiredContext = target === 'SYS' ? 'int-test' : 'sys-test';
             
-            const { data: statuses } = await github.rest.repos.getCombinedStatusForRef({
+            // 3. Look through the commit statuses for the PR head
+            const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: context.payload.pull_request.head.sha
             });
 
-            const success = statuses.statuses.find(s => s.context === requiredContext && s.state === 'success');
+            // 4. Check if ANY commit in this branch history has the required 'success'
+            const success = statuses.find(s => s.context === requiredContext && s.state === 'success');
             
             if (!success) {
-              core.setFailed(`STOP! This code has not passed ${requiredContext} yet. You must merge to the previous environment first.`);
+              core.setFailed(`STOP! No record of a successful ${requiredContext} was found. You must merge to the previous environment and pass tests first.`);
             } else {
               console.log(`Success: Found passing status for ${requiredContext}`);
             }
@@ -39,7 +40,6 @@ jobs:
   # JOB 2: The Manual Approval Button (Only triggers for UAT)
   manual-lead-signoff:
     needs: verify-flow
-    # Only run the approval button if the PR is targeting UAT
     if: github.base_ref == 'UAT'
     runs-on: ubuntu-latest
     environment: UAT-Approval
