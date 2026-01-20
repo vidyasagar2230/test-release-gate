@@ -19,7 +19,7 @@ jobs:
         
           # Format: MMDDYYYY_HHMMSS (e.g., 01202026_143005)
           TIMESTAMP=$(date +'%m%d%Y_%H%M%S')
-          TAG_NAME="PRD_TAG_${TIMESTAMP}"
+          TAG_NAME="${APP_NAME}_PRD_TAG_${TIMESTAMP}"
           
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
