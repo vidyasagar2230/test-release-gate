@@ -1,7 +1,10 @@
 name: Quality-Gate
 on: [pull_request]
+
 jobs:
+  # JOB 1: Automatic Verification
   verify-flow:
+    # This runs for SYS and UAT, but skips for INT so you can actually start the process
     runs-on: ubuntu-latest
     steps:
       - name: Check Status
@@ -9,9 +12,16 @@ jobs:
         with:
           script: |
             const target = context.payload.pull_request.base.ref;
-            if (target === 'main') return; // Skip main
             
+            // 1. If merging to INT or main, we don't need to check a previous environment
+            if (target === 'INT' || target === 'main') {
+              console.log("Target is " + target + ". Skipping previous environment check.");
+              return; 
+            }
+            
+            // 2. Determine what status we are looking for
             const requiredContext = target === 'SYS' ? 'int-test' : 'sys-test';
+            
             const { data: statuses } = await github.rest.repos.getCombinedStatusForRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -19,13 +29,20 @@ jobs:
             });
 
             const success = statuses.statuses.find(s => s.context === requiredContext && s.state === 'success');
-            if (!success) core.setFailed(`STOP! This code has not passed ${requiredContext} yet.`);
+            
+            if (!success) {
+              core.setFailed(`STOP! This code has not passed ${requiredContext} yet. You must merge to the previous environment first.`);
+            } else {
+              console.log(`Success: Found passing status for ${requiredContext}`);
+            }
 
-# JOB 2: The Manual Approval Button
+  # JOB 2: The Manual Approval Button (Only triggers for UAT)
   manual-lead-signoff:
-    needs: verify-flow # Only shows the button if SYS testing passed
+    needs: verify-flow
+    # Only run the approval button if the PR is targeting UAT
+    if: github.base_ref == 'UAT'
     runs-on: ubuntu-latest
-    environment: UAT-Approval # Links to the environment you created in Step 1
+    environment: UAT-Approval
     steps:
       - name: Awaiting Approval
         run: echo "Lead has approved the merge to UAT."
