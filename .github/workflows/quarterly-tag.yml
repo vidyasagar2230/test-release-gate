@@ -18,7 +18,7 @@ jobs:
       TZ: 'America/Chicago' 
     steps:
       - name: Checkout code
-        uses: [actions/checkout](https://github.com)@v4
+        uses: uses: actions/checkout@v4
 
       - name: Create and Push Tag
         run: |
