@@ -1,0 +1,31 @@
+name: Quality-Gate
+on: [pull_request]
+jobs:
+  verify-flow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Status
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const target = context.payload.pull_request.base.ref;
+            if (target === 'main') return; // Skip main
+            
+            const requiredContext = target === 'SYS' ? 'int-test' : 'sys-test';
+            const { data: statuses } = await github.rest.repos.getCombinedStatusForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.payload.pull_request.head.sha
+            });
+
+            const success = statuses.statuses.find(s => s.context === requiredContext && s.state === 'success');
+            if (!success) core.setFailed(`STOP! This code has not passed ${requiredContext} yet.`);
+
+# JOB 2: The Manual Approval Button
+  manual-lead-signoff:
+    needs: verify-flow # Only shows the button if SYS testing passed
+    runs-on: ubuntu-latest
+    environment: UAT-Approval # Links to the environment you created in Step 1
+    steps:
+      - name: Awaiting Approval
+        run: echo "Lead has approved the merge to UAT."
