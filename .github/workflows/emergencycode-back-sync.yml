@@ -1,0 +1,27 @@
+name: Emergency Back-Sync
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  back-sync:
+    # Only run if the PR was merged and the branch name starts with EMGC
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'EMGC_')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Sync to Downstream Branches
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          
+          for branch in INT SYS UAT; do
+            echo "Back-syncing to $branch..."
+            git checkout $branch
+            git merge origin/main --no-edit
+            git push origin $branch
+          done

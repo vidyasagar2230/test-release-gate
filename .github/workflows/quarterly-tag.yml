@@ -1,0 +1,30 @@
+name: Auto Tag on Release Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  create-tag:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      TZ: 'America/Chicago' 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create and Push Tag
+        run: |
+          APP_NAME="test-release-gate"
+          TIMESTAMP=$(date +'%m%d%Y_%H%M%S')
+          TAG_NAME="${APP_NAME}_PRD_TAG_${TIMESTAMP}"
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          echo "Creating CST Tag: $TAG_NAME"
+          git tag -a "$TAG_NAME" -m "Automated CST Release at $TIMESTAMP"
+          git push origin "$TAG_NAME"

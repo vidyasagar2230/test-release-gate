@@ -1,0 +1,15 @@
+name: INT Deployment
+on:
+  push:
+    branches: [ INT ]
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    environment: INT
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Unit Tests
+        run: npm test # Replace with your test command
+      - name: Deploy to INT Server
+        run: echo "Deploying to Integration Environment..."
