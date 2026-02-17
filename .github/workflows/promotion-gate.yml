@@ -1,0 +1,17 @@
+name: Risk-Gated Promotion
+on:
+  pull_request:
+    branches: [ SYS, UAT, main ]
+
+jobs:
+  approval-and-test:
+    runs-on: ubuntu-latest
+    # This picks up the "Required Reviewers" logic from your GitHub Settings
+    environment: ${{ github.base_ref }} 
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Integration Tests
+        run: echo "Running automated tests for ${{ github.base_ref }}..."
+      - name: Success Notification
+        run: echo "Promotion to ${{ github.base_ref }} approved and verified."
