@@ -1,4 +1,4 @@
-name: Emergency Back-Sync
+name: emergencycode-back-sync
 on:
   pull_request:
     types: [closed]
