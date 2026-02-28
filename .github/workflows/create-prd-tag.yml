@@ -1,4 +1,4 @@
-name: Auto Tag on Release Merge
+name: create-prd-tag
 
 on:
   pull_request:
